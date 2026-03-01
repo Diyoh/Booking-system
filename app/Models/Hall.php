@@ -113,7 +113,7 @@ class Hall extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price_per_hour, 2);
+        return 'FCFA ' . number_format($this->price_per_hour, 2);
     }
 
     /**

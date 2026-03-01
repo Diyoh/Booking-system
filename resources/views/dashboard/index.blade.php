@@ -92,7 +92,7 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $hall->name }}</h3>
                     <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $hall->description }}</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-900">{{ $hall->formatted_price }}/hr (FCFA)</span>
+                        <span class="text-sm font-medium text-gray-900">FCFA {{ $hall->formatted_price }}/hr</span>
                         <span class="text-sm text-gray-500">{{ $hall->capacity }} guests</span>
                     </div>
                     <a href="{{ route('bookings.create.hall', $hall->id) }}" 

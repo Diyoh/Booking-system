@@ -11,17 +11,24 @@
             <div class="p-6 bg-white border-b border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @forelse($events as $event)
-                        <div class="border rounded-lg p-4 shadow-sm hover:shadow-md transition">
-                            <h3 class="font-bold text-lg mb-2">{{ $event->name }}</h3>
-                            <p class="text-gray-600 mb-2">{{ Str::limit($event->description, 100) }}</p>
-                            <p class="text-sm text-gray-500 mb-2">
-                                <i class="fas fa-calendar-alt"></i> {{ \Carbon\Carbon::parse($event->event_date)->format('M d, Y') }}
-                            </p>
-                            <div class="flex justify-between items-center mt-4">
-                                <span class="text-green-600 font-bold">FCFA {{ number_format($event->ticket_price, 0) }}</span>
-                                <a href="{{ route('events.show', $event->id) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                    View Details
-                                </a>
+                        <div class="border rounded-lg bg-white overflow-hidden shadow-sm hover:shadow-md transition">
+                            @if($event->image_url)
+                            <div class="h-48 bg-gray-200 w-full">
+                                <img src="{{ $event->image_url }}" alt="{{ $event->name }}" class="h-full w-full object-cover">
+                            </div>
+                            @endif
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg mb-2">{{ $event->name }}</h3>
+                                <p class="text-gray-600 mb-2">{{ Str::limit($event->description, 100) }}</p>
+                                <p class="text-sm text-gray-500 mb-2">
+                                    <i class="fas fa-calendar-alt"></i> {{ \Carbon\Carbon::parse($event->event_date)->format('M d, Y') }}
+                                </p>
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="text-green-600 font-bold">FCFA {{ number_format($event->ticket_price, 0) }}</span>
+                                    <a href="{{ route('events.show', $event->id) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                        View Details
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @empty

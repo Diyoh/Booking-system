@@ -38,10 +38,14 @@
                                             <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ min(100, ($event->booked_slots / max(1, $event->available_slots)) * 100) }}%"></div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">${{ number_format($event->ticket_price, 2) }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                        <button class="text-red-600 hover:text-red-900">Delete</button>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">FCFA {{ number_format($event->ticket_price, 2) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center">
+                                        <a href="{{ route('admin.events.edit', $event->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                        <form action="{{ route('admin.events.destroy', $event->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-transparent border-0 cursor-pointer">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty

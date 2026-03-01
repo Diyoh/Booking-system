@@ -31,10 +31,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $hall->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $hall->location }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $hall->capacity }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">${{ number_format($hall->price_per_hour, 2) }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                        <button class="text-red-600 hover:text-red-900">Delete</button>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">FCFA {{ number_format($hall->price_per_hour, 2) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center">
+                                        <a href="{{ route('admin.halls.edit', $hall->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                        <form action="{{ route('admin.halls.destroy', $hall->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this hall?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-transparent border-0 cursor-pointer">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty

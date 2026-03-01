@@ -23,7 +23,7 @@
             </div>
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="text-gray-500 text-sm uppercase font-bold">Total Revenue</div>
-                <div class="text-3xl font-bold text-green-600">${{ number_format($stats['total_revenue'], 2) }}</div>
+                <div class="text-3xl font-bold text-green-600">FCFA {{ number_format($stats['total_revenue'], 2) }}</div>
             </div>
         </div>
 

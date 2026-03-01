@@ -58,15 +58,27 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/halls', [AdminController::class, 'halls'])->name('halls');
     Route::get('/halls/create', [AdminController::class, 'createHall'])->name('halls.create');
     Route::post('/halls', [AdminController::class, 'storeHall'])->name('halls.store');
+    Route::get('/halls/{id}/edit', [AdminController::class, 'editHall'])->name('halls.edit');
+    Route::put('/halls/{id}', [AdminController::class, 'updateHall'])->name('halls.update');
+    Route::delete('/halls/{id}', [AdminController::class, 'destroyHall'])->name('halls.destroy');
     
     // Event management
     Route::get('/events', [AdminController::class, 'events'])->name('events');
     Route::get('/events/create', [AdminController::class, 'createEvent'])->name('events.create');
     Route::post('/events', [AdminController::class, 'storeEvent'])->name('events.store');
+    Route::get('/events/{id}/edit', [AdminController::class, 'editEvent'])->name('events.edit');
+    Route::put('/events/{id}', [AdminController::class, 'updateEvent'])->name('events.update');
+    Route::delete('/events/{id}', [AdminController::class, 'destroyEvent'])->name('events.destroy');
     
     // Booking management
     Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings');
+    Route::get('/bookings/{id}/edit', [AdminController::class, 'editBooking'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [AdminController::class, 'updateBooking'])->name('bookings.update');
+    Route::delete('/bookings/{id}', [AdminController::class, 'destroyBooking'])->name('bookings.destroy');
     
     // User management
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])->name('users.destroy');
 });

@@ -5,6 +5,11 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
+                @if($event->image_url)
+                <div class="w-full h-80 mb-8 rounded-lg overflow-hidden">
+                    <img src="{{ $event->image_url }}" alt="{{ $event->name }}" class="w-full h-full object-cover">
+                </div>
+                @endif
                 <div class="md:flex md:justify-between">
                     <div class="md:w-2/3">
                         <h2 class="text-3xl font-bold mb-4">{{ $event->name }}</h2>

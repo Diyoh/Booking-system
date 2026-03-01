@@ -169,7 +169,7 @@ class Event extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->ticket_price, 2);
+        return 'FCFA ' . number_format($this->ticket_price, 2);
     }
 
     /**
