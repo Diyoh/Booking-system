@@ -14,7 +14,7 @@
 
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
-                <form method="POST" action="{{ route('admin.events.update', $event->id) }}">
+                <form method="POST" action="{{ route('admin.events.update', $event->id) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -33,7 +33,14 @@
 
                         <div>
                             <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
-                            <input type="text" name="location" id="location" value="{{ old('location', $event->location) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <select name="location" id="location" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="">Select a Location</option>
+                                @foreach($locations as $loc)
+                                    <option value="{{ $loc->name }}" {{ old('location', $event->location) == $loc->name ? 'selected' : '' }}>
+                                        {{ $loc->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('location') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -56,7 +63,7 @@
                         </div>
 
                         <div>
-                            <label for="ticket_price" class="block text-sm font-medium text-gray-700">Ticket Price ($)</label>
+                            <label for="ticket_price" class="block text-sm font-medium text-gray-700">Ticket Price (FCFA)</label>
                             <input type="number" step="0.01" name="ticket_price" id="ticket_price" value="{{ old('ticket_price', $event->ticket_price) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             @error('ticket_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -67,10 +74,49 @@
                             @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="md:col-span-2">
-                            <label for="image_url" class="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-                            <input type="url" name="image_url" id="image_url" value="{{ old('image_url', $event->image_url) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            @error('image_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <div class="md:col-span-2 bg-gray-50 p-4 rounded border border-gray-200 mt-4">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Images</h3>
+                            
+                            <!-- Current Front Image -->
+                            @if($event->image_url)
+                                <div class="mb-4">
+                                    <p class="text-sm font-medium text-gray-700 mb-2">Current Main Image:</p>
+                                    <img src="{{ Str::startsWith($event->image_url, ['http://', 'https://']) ? $event->image_url : asset('storage/' . $event->image_url) }}" alt="Front Image" class="h-32 w-auto object-cover rounded shadow">
+                                </div>
+                            @endif
+
+                            <div class="mb-6">
+                                <label for="front_image" class="block text-sm font-medium text-gray-700">Update Main Image (Optional)</label>
+                                <input type="file" name="front_image" id="front_image" accept="image/*" class="mt-1 flex w-full border-gray-300 rounded-md shadow-sm text-sm p-2 bg-white">
+                                <p class="text-xs text-gray-500 mt-1">Leave empty to keep current image. Recommended size: 800x600px, max 2MB.</p>
+                                @error('front_image')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Current Other Images -->
+                            @if($event->other_images && count($event->other_images) > 0)
+                                <div class="mb-4 border-t border-gray-200 pt-4">
+                                    <p class="text-sm font-medium text-gray-700 mb-2">Current Gallery Images:</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($event->other_images as $img)
+                                            <img src="{{ asset('storage/' . $img) }}" alt="Gallery Image" class="h-20 w-20 object-cover rounded shadow">
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="mb-2">
+                                <label for="other_images" class="block text-sm font-medium text-gray-700">Upload New Gallery Images (Optional)</label>
+                                <input type="file" name="other_images[]" id="other_images" multiple accept="image/*" class="mt-1 flex w-full border-gray-300 rounded-md shadow-sm text-sm p-2 bg-white">
+                                <p class="text-xs text-gray-500 mt-1">Warning: Uploading new images here will completely replace your current gallery images. Max 2MB per image.</p>
+                                @error('other_images')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                                @error('other_images.*')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 

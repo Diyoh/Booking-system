@@ -44,6 +44,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         // Validate input
+        // The phone number regex mandates international format (e.g. +237...)
+        // This is strictly required by the Africa's Talking SDK for USSD and SMS.
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'phone_number' => ['required', 'string', 'max:20', 'unique:users,phone_number', 'regex:/^\+[0-9]{10,15}$/'],

@@ -14,10 +14,10 @@ use App\Http\Controllers\Api\PaymentController;
 |
 */
 
-// USSD Webhook - called by Africa's Talking when user dials USSD code
+// USSD Webhook - called by Africa's Talking when user dials USSD code (*384*...)
 Route::post('/ussd', [UssdController::class, 'handle'])->name('ussd.handle');
 
-// Payment Callback - called by Africa's Talking when payment completes
+// Payment Callback - called by Africa's Talking when STK push payment succeeds or fails
 Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
 // Payment status check (for debugging/admin use)

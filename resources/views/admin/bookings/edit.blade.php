@@ -43,7 +43,7 @@
                         </div>
 
                         <div>
-                            <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount ($)</label>
+                            <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount (FCFA)</label>
                             <input type="number" step="0.01" name="total_amount" id="total_amount" value="{{ old('total_amount', $booking->total_amount) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             @error('total_amount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>

@@ -12,12 +12,18 @@ use App\Http\Controllers\Web\AdminController;
 |--------------------------------------------------------------------------
 */
 
-// Public routes
+// Public routes - accessible without authentication
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::get('/halls', [DashboardController::class, 'halls'])->name('halls.index');
+Route::get('/halls/{id}', [DashboardController::class, 'showHall'])->name('halls.show');
+Route::get('/events', [DashboardController::class, 'events'])->name('events.index');
+Route::get('/events/{id}', [DashboardController::class, 'showEvent'])->name('events.show');
+
 // Authentication routes
+// The 'guest' middleware ensures these are only accessible to unauthenticated users
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -28,13 +34,10 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Protected user routes
+// The 'auth' middleware requires the user to be logged in
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/halls', [DashboardController::class, 'halls'])->name('halls.index');
-    Route::get('/halls/{id}', [DashboardController::class, 'showHall'])->name('halls.show');
-    Route::get('/events', [DashboardController::class, 'events'])->name('events.index');
-    Route::get('/events/{id}', [DashboardController::class, 'showEvent'])->name('events.show');
     Route::get('/my-bookings', [DashboardController::class, 'bookings'])->name('dashboard.bookings');
 
     // Booking routes
@@ -51,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin routes
+// The 'admin' middleware (custom) ensures only users with is_admin=true can access these
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     
@@ -80,5 +84,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('users.edit');
     Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('users.update');
-    Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+    // Location management
+    Route::get('/locations', [AdminController::class, 'locations'])->name('locations');
+    Route::get('/locations/create', [AdminController::class, 'createLocation'])->name('locations.create');
+    Route::post('/locations', [AdminController::class, 'storeLocation'])->name('locations.store');
+    Route::get('/locations/{id}/edit', [AdminController::class, 'editLocation'])->name('locations.edit');
+    Route::put('/locations/{id}', [AdminController::class, 'updateLocation'])->name('locations.update');
+    Route::delete('/locations/{id}', [AdminController::class, 'destroyLocation'])->name('locations.destroy');
 });

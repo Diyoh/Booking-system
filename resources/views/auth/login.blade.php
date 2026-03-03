@@ -17,6 +17,7 @@
             </p>
         </div>
         
+        {{-- Standard Laravel authentication form posting to the login route --}}
         <form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
             @csrf
             
@@ -28,6 +29,7 @@
                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm @error('email') border-red-500 @enderror" 
                            placeholder="Email address">
                 </div>
+                {{-- Alpine.js x-data component to toggle password visibility --}}
                 <div x-data="{ show: false }" class="relative">
                     <label for="password" class="sr-only">Password</label>
                     <input id="password" name="password" :type="show ? 'text' : 'password'" autocomplete="current-password" required 

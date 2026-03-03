@@ -11,6 +11,7 @@
     </div>
 
     <!-- Stats Cards -->
+    {{-- Display high-level booking statistics for the user --}}
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-5">
@@ -77,6 +78,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {{-- Loop through paginated list of available halls --}}
             @foreach($halls as $hall)
             <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
                 <div class="h-48 bg-gray-200 flex items-center justify-center">
@@ -115,6 +117,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {{-- Loop through upcoming events (ordered by event_date) --}}
             @foreach($events as $event)
             <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
                 <div class="h-48 bg-gray-200 flex items-center justify-center">

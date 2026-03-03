@@ -7,34 +7,96 @@
             {{ __('Available Halls') }}
         </h2>
 
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    @forelse($halls as $hall)
-                        <div class="border rounded-lg bg-white overflow-hidden shadow-sm hover:shadow-md transition">
-                            @if($hall->image_url)
-                            <div class="h-48 bg-gray-200 w-full">
-                                <img src="{{ $hall->image_url }}" alt="{{ $hall->name }}" class="h-full w-full object-cover">
-                            </div>
-                            @endif
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-2">{{ $hall->name }}</h3>
-                                <p class="text-gray-600 mb-2">{{ Str::limit($hall->description, 100) }}</p>
-                                <div class="flex justify-between items-center mt-4">
-                                    <span class="text-blue-600 font-bold">FCFA {{ number_format($hall->price_per_hour, 0) }}/hr</span>
-                                    <a href="{{ route('halls.show', $hall->id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                        View Details
-                                    </a>
-                                </div>
-                            </div>
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Sidebar Filters -->
+            {{-- Filtering form for users to narrow down available halls --}}
+            <div class="w-full md:w-1/4">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Filters</h3>
+                    
+                    {{-- Form auto-submits on change via Alpine.js --}}
+                    <form action="{{ route('halls.index') }}" method="GET" x-data>
+                        <!-- Location Filter -->
+                        <div class="mb-5">
+                            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Region/Location</label>
+                            <select name="location" id="location" @change="$el.closest('form').submit()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="">All Locations</option>
+                                @foreach($locations as $loc)
+                                    <option value="{{ $loc->name }}" {{ request('location') == $loc->name ? 'selected' : '' }}>
+                                        {{ $loc->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                    @empty
-                        <p class="text-gray-500 col-span-3 text-center">No halls available at the moment.</p>
-                    @endforelse
-                </div>
 
-                <div class="mt-4">
-                    {{ $halls->links() }}
+                        <!-- Capacity Filter -->
+                        <div class="mb-5">
+                            <label for="capacity" class="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
+                            <select name="capacity" id="capacity" @change="$el.closest('form').submit()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="">Any Size</option>
+                                <option value="small" {{ request('capacity') == 'small' ? 'selected' : '' }}>Small (< 50 people)</option>
+                                <option value="medium" {{ request('capacity') == 'medium' ? 'selected' : '' }}>Medium (50-200 people)</option>
+                                <option value="large" {{ request('capacity') == 'large' ? 'selected' : '' }}>Large (> 200 people)</option>
+                            </select>
+                        </div>
+
+                        <!-- Price Range Filter -->
+                        <div class="mb-5">
+                            <label for="price_range" class="block text-sm font-medium text-gray-700 mb-1">Price Range</label>
+                            <select name="price_range" id="price_range" @change="$el.closest('form').submit()"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="">Any Price</option>
+                                <option value="low" {{ request('price_range') == 'low' ? 'selected' : '' }}>Low (< 10,000 FCFA/hr)</option>
+                                <option value="medium" {{ request('price_range') == 'medium' ? 'selected' : '' }}>Medium (10,000-50,000 FCFA/hr)</option>
+                                <option value="high" {{ request('price_range') == 'high' ? 'selected' : '' }}>High (> 50,000 FCFA/hr)</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Grid -->
+            {{-- Displays the paginated halls matching the current filter criteria --}}
+            <div class="w-full md:w-3/4">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            @forelse($halls as $hall)
+                                <div class="border rounded-lg bg-white overflow-hidden shadow-sm hover:shadow-md transition flex flex-col h-full">
+                                    @if($hall->image_url)
+                                    <div class="h-48 bg-gray-200 w-full shrink-0">
+                                        <img src="{{ Str::startsWith($hall->image_url, ['http://', 'https://', '/']) ? $hall->image_url : asset('storage/' . $hall->image_url) }}" alt="{{ $hall->name }}" class="h-full w-full object-cover">
+                                    </div>
+                                    @endif
+                                    <div class="p-4 flex flex-col flex-grow">
+                                        <h3 class="font-bold text-lg mb-2">{{ $hall->name }}</h3>
+                                        <p class="text-sm text-gray-500 mb-2 font-medium">{{ $hall->location }} • Up to {{ $hall->capacity }} people</p>
+                                        <p class="text-gray-600 mb-4 flex-grow">{{ Str::limit($hall->description, 80) }}</p>
+                                        <div class="flex flex-col mt-auto pt-4 border-t border-gray-100">
+                                            <span class="text-indigo-600 font-bold mb-3">FCFA {{ number_format($hall->price_per_hour, 0) }}/hr</span>
+                                            <a href="{{ route('halls.show', $hall->id) }}" class="w-full text-center bg-indigo-50 text-indigo-700 font-medium px-4 py-2 rounded hover:bg-indigo-100 transition">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full py-12 text-center text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p class="text-lg">No halls match your current filters.</p>
+                                    <p class="text-sm mt-2"><a href="{{ route('halls.index') }}" class="text-indigo-600 hover:text-indigo-800">Clear filters</a> to see all options.</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <div class="mt-8">
+                            {{ $halls->links() }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

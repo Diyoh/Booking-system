@@ -3,8 +3,14 @@
 @section('title', 'Welcome - Community Booking')
 
 @section('content')
+{{-- 
+     Public landing page highlighting system features.
+     Provides direct links to user registration and authentication. 
+--}}
+<!-- Hero Section with gradient background -->
 <div class="bg-gradient-to-r from-indigo-500 to-purple-600">
     <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <!-- Central Hero Text & CTA Buttons -->
         <div class="text-center">
             <h1 class="text-4xl font-extrabold text-white sm:text-5xl sm:tracking-tight lg:text-6xl">
                 Community Event Booking System
@@ -24,7 +30,7 @@
     </div>
 </div>
 
-<!-- Features Section -->
+<!-- Features Section - Highlights key capabilities of the application -->
 <div class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="lg:text-center">
@@ -35,8 +41,11 @@
         </div>
 
         <div class="mt-10">
+            <!-- Feature Grid: 3 columns on medium screens and up, stacked on mobile -->
             <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
+                <!-- Feature 1: Hall Bookings -->
                 <div class="relative">
+                    <!-- Icon container -->
                     <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -124,7 +133,7 @@
     </div>
 </div>
 
-<!-- CTA Section -->
+<!-- Call to Action (CTA) Section - encourages users to register -->
 <div class="bg-indigo-700">
     <div class="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
         <h2 class="text-3xl font-extrabold text-white sm:text-4xl">

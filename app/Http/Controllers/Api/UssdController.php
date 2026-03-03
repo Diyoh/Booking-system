@@ -69,16 +69,19 @@ class UssdController extends Controller
         ]);
 
         try {
-            // Route to UssdMenuService which handles all menu logic
+            // STEP 1: Route to UssdMenuService which handles all menu logic and state management
+            // The service returns the precise text string intended for the user's screen
             $response = $this->ussdService->handleRequest($sessionId, $phoneNumber, $text);
 
-            // Log the response
+            // Log the response for debugging and audit purposes
             Log::info('USSD Response Sent', [
                 'session_id' => $sessionId,
                 'response' => $response,
             ]);
 
-            // Return plain text response to Africa's Talking
+            // STEP 2: Return plain text response to Africa's Talking
+            // AT requires a 200 OK with 'text/plain' content type
+            // The string MUST start with 'CON ' (continue) or 'END ' (terminate session)
             return response($response, 200)
                 ->header('Content-Type', 'text/plain');
 

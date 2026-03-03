@@ -18,6 +18,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
@@ -29,6 +30,15 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($events as $event)
                                 <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($event->image_url)
+                                            <img src="{{ Str::startsWith($event->image_url, ['http://', 'https://', '/']) ? $event->image_url : asset('storage/' . $event->image_url) }}" alt="Image" class="h-10 w-10 rounded-full object-cover">
+                                        @else
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $event->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ \Carbon\Carbon::parse($event->event_date)->format('M d, Y') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $event->location }}</td>

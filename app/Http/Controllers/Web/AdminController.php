@@ -8,6 +8,8 @@ use App\Models\Event;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * AdminController
@@ -75,7 +77,8 @@ class AdminController extends Controller
      */
     public function createHall()
     {
-        return view('admin.halls.create');
+        $locations = \App\Models\Location::orderBy('name')->get();
+        return view('admin.halls.create', compact('locations'));
     }
 
     /**
@@ -93,10 +96,25 @@ class AdminController extends Controller
             'capacity' => ['required', 'integer', 'min:1'],
             'price_per_hour' => ['required', 'numeric', 'min:0'],
             'amenities' => ['nullable', 'array'],
-            'image_url' => ['nullable', 'string'],
+            'front_image' => ['nullable', 'image', 'max:2048'],
+            'other_images.*' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        Hall::create($validated);
+        $data = $validated;
+        
+        if ($request->hasFile('front_image')) {
+            $data['image_url'] = $request->file('front_image')->store('halls', 'public');
+        }
+
+        if ($request->hasFile('other_images')) {
+            $otherImages = [];
+            foreach ($request->file('other_images') as $image) {
+                $otherImages[] = $image->store('halls', 'public');
+            }
+            $data['other_images'] = $otherImages;
+        }
+
+        Hall::create($data);
 
         return redirect()->route('admin.halls')
             ->with('success', 'Hall created successfully.');
@@ -111,7 +129,8 @@ class AdminController extends Controller
     public function editHall($id)
     {
         $hall = Hall::findOrFail($id);
-        return view('admin.halls.edit', compact('hall'));
+        $locations = \App\Models\Location::orderBy('name')->get();
+        return view('admin.halls.edit', compact('hall', 'locations'));
     }
 
     /**
@@ -132,10 +151,40 @@ class AdminController extends Controller
             'capacity' => ['required', 'integer', 'min:1'],
             'price_per_hour' => ['required', 'numeric', 'min:0'],
             'amenities' => ['nullable', 'array'],
-            'image_url' => ['nullable', 'string'],
+            'front_image' => ['nullable', 'image', 'max:2048'],
+            'other_images.*' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $hall->update($validated);
+        $data = $validated;
+
+        if ($request->hasFile('front_image')) {
+            // STEP 1: Delete the old image from storage if it exists to prevent orphaned files
+            // We check !Str::startsWith to avoid trying to delete external placeholder URLs (like http://)
+            if ($hall->image_url && !Str::startsWith($hall->image_url, ['http://', 'https://', '/'])) {
+                Storage::disk('public')->delete($hall->image_url);
+            }
+            // STEP 2: Store the new image in the 'public/halls' directory and save the relative path
+            $data['image_url'] = $request->file('front_image')->store('halls', 'public');
+        }
+
+        if ($request->hasFile('other_images')) {
+            // STEP 1: Delete all existing gallery images from storage before uploading new ones
+            if ($hall->other_images) {
+                foreach ($hall->other_images as $oldImage) {
+                    Storage::disk('public')->delete($oldImage);
+                }
+            }
+            
+            // STEP 2: Loop through the uploaded files and store them
+            $otherImages = [];
+            foreach ($request->file('other_images') as $image) {
+                $otherImages[] = $image->store('halls', 'public');
+            }
+            // STEP 3: Save the array of paths as JSON in the database (handled by Eloquent casts)
+            $data['other_images'] = $otherImages;
+        }
+
+        $hall->update($data);
 
         return redirect()->route('admin.halls')
             ->with('success', 'Hall updated successfully.');
@@ -175,7 +224,8 @@ class AdminController extends Controller
      */
     public function createEvent()
     {
-        return view('admin.events.create');
+        $locations = \App\Models\Location::orderBy('name')->get();
+        return view('admin.events.create', compact('locations'));
     }
 
     /**
@@ -195,10 +245,25 @@ class AdminController extends Controller
             'location' => ['required', 'string', 'max:255'],
             'ticket_price' => ['required', 'numeric', 'min:0'],
             'available_slots' => ['required', 'integer', 'min:1'],
-            'image_url' => ['nullable', 'string'],
+            'front_image' => ['nullable', 'image', 'max:2048'],
+            'other_images.*' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        Event::create($validated);
+        $data = $validated;
+
+        if ($request->hasFile('front_image')) {
+            $data['image_url'] = $request->file('front_image')->store('events', 'public');
+        }
+
+        if ($request->hasFile('other_images')) {
+            $otherImages = [];
+            foreach ($request->file('other_images') as $image) {
+                $otherImages[] = $image->store('events', 'public');
+            }
+            $data['other_images'] = $otherImages;
+        }
+
+        Event::create($data);
 
         return redirect()->route('admin.events')
             ->with('success', 'Event created successfully.');
@@ -213,7 +278,8 @@ class AdminController extends Controller
     public function editEvent($id)
     {
         $event = Event::findOrFail($id);
-        return view('admin.events.edit', compact('event'));
+        $locations = \App\Models\Location::orderBy('name')->get();
+        return view('admin.events.edit', compact('event', 'locations'));
     }
 
     /**
@@ -236,10 +302,34 @@ class AdminController extends Controller
             'location' => ['required', 'string', 'max:255'],
             'ticket_price' => ['required', 'numeric', 'min:0'],
             'available_slots' => ['required', 'integer', 'min:1'],
-            'image_url' => ['nullable', 'string'],
+            'front_image' => ['nullable', 'image', 'max:2048'],
+            'other_images.*' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $event->update($validated);
+        $data = $validated;
+
+        if ($request->hasFile('front_image')) {
+            if ($event->image_url && !Str::startsWith($event->image_url, ['http://', 'https://', '/'])) {
+                Storage::disk('public')->delete($event->image_url);
+            }
+            $data['image_url'] = $request->file('front_image')->store('events', 'public');
+        }
+
+        if ($request->hasFile('other_images')) {
+            if ($event->other_images) {
+                foreach ($event->other_images as $oldImage) {
+                    Storage::disk('public')->delete($oldImage);
+                }
+            }
+            
+            $otherImages = [];
+            foreach ($request->file('other_images') as $image) {
+                $otherImages[] = $image->store('events', 'public');
+            }
+            $data['other_images'] = $otherImages;
+        }
+
+        $event->update($data);
 
         return redirect()->route('admin.events')
             ->with('success', 'Event updated successfully.');
@@ -396,5 +486,93 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users')
             ->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Location management - List all locations.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function locations()
+    {
+        $locations = \App\Models\Location::orderBy('name')->paginate(20);
+        
+        return view('admin.locations.index', compact('locations'));
+    }
+
+    /**
+     * Location management - Create form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function createLocation()
+    {
+        return view('admin.locations.create');
+    }
+
+    /**
+     * Location management - Store new location.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function storeLocation(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:locations'],
+        ]);
+
+        \App\Models\Location::create($validated);
+
+        return redirect()->route('admin.locations')
+            ->with('success', 'Location created successfully.');
+    }
+
+    /**
+     * Location management - Edit form.
+     *
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function editLocation($id)
+    {
+        $location = \App\Models\Location::findOrFail($id);
+        return view('admin.locations.edit', compact('location'));
+    }
+
+    /**
+     * Location management - Update location.
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateLocation(Request $request, $id)
+    {
+        $location = \App\Models\Location::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:locations,name,' . $location->id],
+        ]);
+
+        $location->update($validated);
+
+        return redirect()->route('admin.locations')
+            ->with('success', 'Location updated successfully.');
+    }
+
+    /**
+     * Location management - Delete location.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroyLocation($id)
+    {
+        $location = \App\Models\Location::findOrFail($id);
+        $location->delete();
+
+        return redirect()->route('admin.locations')
+            ->with('success', 'Location deleted successfully.');
     }
 }

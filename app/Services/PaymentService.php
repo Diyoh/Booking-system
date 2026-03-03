@@ -79,23 +79,20 @@ class PaymentService
         ]);
 
         try {
-            // Prepare payment request
+            // Prepare payment request parameters
             $productName = config('app.name');
             $currencyCode = config('services.africastalking.currency_code', 'XAF');
             
+            // NOTE: The actual API call to Africa's Talking Mobile Checkout is commented out
+            // because the current SDK version seems to have issues with the payment module.
+            // Using a simulated response below for development/testing purposes.
+            
             // Call Africa's Talking Mobile Checkout API
             // $response = $this->payment->mobileCheckout([
-            //     'productName' => $productName,
-            //     'phoneNumber' => $booking->user->phone_number,
-            //     'currencyCode' => $currencyCode,
-            //     'amount' => $booking->total_amount,
-            //     'metadata' => [
-            //         'booking_id' => $booking->id,
-            //         'reference_code' => $booking->reference_code,
-            //     ],
+            //     ...
             // ]);
 
-            // SIMULATION: Fake response
+            // SIMULATION: Fake successful STK Push initialization response
             $response = [
                 'status' => 'PendingConfirmation',
                 'description' => 'The service request is processed successfully.',
@@ -167,16 +164,18 @@ class PaymentService
             $transaction->provider_response = $callbackData;
             $transaction->save();
 
-            // Check payment status
+            // Check payment status from the callback payload
             if ($status === 'Success' || $status === 'Completed') {
-                // Payment successful
+                // STEP 1: Mark the transaction record as successful
                 $transaction->markAsSuccessful($transactionId, $callbackData);
 
-                // Confirm the booking
+                // STEP 2: Confirm the booking via BookingService
+                // This solidifies the pending reservation (removes expiry hold, decrements event slots)
                 $booking = $transaction->booking;
                 app(BookingService::class)->confirmBooking($booking);
 
-                // Send SMS confirmation
+                // STEP 3: Dispatch SMS confirmation to the user
+                // Sends them their reference code for entrance verification
                 app(SmsService::class)->sendBookingConfirmation($booking);
 
                 Log::info('Payment callback processed - Success', [

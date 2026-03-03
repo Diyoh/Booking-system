@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character set and responsive viewport settings for mobile compatibility -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Dynamic page title, falling back to 'Community Booking System' if not specified -->
     <title>@yield('title', 'Community Booking System')</title>
     
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN for utility-first styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Alpine.js CDN -->
+    <!-- Alpine.js CDN for lightweight JavaScript interactivity (e.g., dropdowns, alerts) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter font family for clean, modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,28 +27,34 @@
     @stack('styles')
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
+    <!-- Main Navigation Bar - Sticky to stay at top while scrolling -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
+                <!-- Left side: Brand Logo and Navigation Links -->
                 <div class="flex">
+                    <!-- Brand Logo -->
                     <div class="flex-shrink-0 flex items-center">
                         <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600">
                             CommunityBook
                         </a>
                     </div>
                     
-                    @auth
                     <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        @auth
                         <a href="{{ route('dashboard') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('dashboard') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium">
                             Dashboard
                         </a>
+                        @endauth
+
                         <a href="{{ route('halls.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('halls.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium">
                             Halls
                         </a>
                         <a href="{{ route('events.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('events.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium">
                             Events
                         </a>
+                        
+                        @auth
                         <a href="{{ route('dashboard.bookings') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('dashboard.bookings') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium">
                             My Bookings
                         </a>
@@ -56,12 +64,13 @@
                             Admin
                         </a>
                         @endif
+                        @endauth
                     </div>
-                    @endauth
                 </div>
                 
                 <div class="flex items-center">
                     @auth
+                    {{-- User Profile Dropdown using Alpine.js for interactivity --}}
                     <div class="ml-3 relative" x-data="{ open: false }">
                         <div>
                             <button @click="open = !open" type="button" class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -96,9 +105,11 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
+    <!-- Flash Messages Section -->
+    {{-- Display success flash messages passed from controllers via session --}}
     @if(session('success'))
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <!-- Alpine.js component for dismissible alert (x-data="{ show: true }") -->
         <div class="bg-green-50 border-l-4 border-green-400 p-4" x-data="{ show: true }" x-show="show">
             <div class="flex">
                 <div class="flex-shrink-0">
@@ -121,6 +132,7 @@
     </div>
     @endif
 
+    {{-- Display validation error messages --}}
     @if($errors->any())
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
         <div class="bg-red-50 border-l-4 border-red-400 p-4" x-data="{ show: true }" x-show="show">
@@ -149,12 +161,12 @@
     </div>
     @endif
 
-    <!-- Main Content -->
+    <!-- Main Content Area - Injected by child views using @section('content') -->
     <main class="py-8">
         @yield('content')
     </main>
 
-    <!-- Footer -->
+    <!-- Footer Section -->
     <footer class="bg-white border-t border-gray-200 mt-12">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-gray-500 text-sm">

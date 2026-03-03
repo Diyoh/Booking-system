@@ -106,9 +106,11 @@ class UssdMenuService
     protected function mainMenu(UssdSession $session, string $input): string
     {
         if (empty($input)) {
-            // First time - show menu
+            // STEP 1: First time - user has just dialed the code (e.g., *384*10#)
+            // We set the initial state to 'main' so we know where to route them next time
             $session->updateState('main');
             
+            // CON means "Continue". Africa's Talking will show this text and wait for user input
             return "CON Welcome to Community Booking\n" .
                    "1. Browse Halls\n" .
                    "2. Browse Events\n" .
@@ -211,16 +213,19 @@ class UssdMenuService
         }
 
         if (empty($input)) {
-            // Display list
+            // STEP 1: Display the current page of halls
+            // Build the menu string incrementally
             $menu = "CON Available Halls (Page $page):\n";
             $displayItems = $halls->take(self::ITEMS_PER_PAGE);
             
             foreach ($displayItems as $index => $hall) {
+                // Number the options 1, 2, 3...
                 $key = $index + 1;
                 $menu .= "$key. {$hall->name} - {$hall->formatted_price}/hr\n";
             }
 
-            // Add next/back options
+            // STEP 2: Add pagination controls if necessary
+            // 9 for Next, 0 for Back are standard USSD conventions
             if ($halls->count() > self::ITEMS_PER_PAGE) {
                 $menu .= "9. Next\n";
             }

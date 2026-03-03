@@ -34,7 +34,7 @@ class DashboardController extends Controller
      */
     public function __construct(BookingService $bookingService)
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['halls', 'events', 'showHall', 'showEvent']);
         $this->bookingService = $bookingService;
     }
 
@@ -88,21 +88,34 @@ class DashboardController extends Controller
      */
     public function halls(Request $request)
     {
+        $locations = \App\Models\Location::orderBy('name')->get();
+
         $halls = Hall::active()
-            ->when($request->capacity_min, function ($query, $capacity) {
-                return $query->where('capacity', '>=', $capacity);
+            // LOCATION FILTER: Exact match on location string
+            ->when($request->location, function ($query, $location) {
+                return $query->where('location', $location);
             })
-            ->when($request->price_max, function ($query, $price) {
-                return $query->where('price_per_hour', '<=', $price);
+            // CAPACITY FILTER: Buckets based on business rules
+            ->when($request->capacity, function ($query, $capacity) {
+                if ($capacity === 'small') return $query->where('capacity', '<', 50);
+                if ($capacity === 'medium') return $query->whereBetween('capacity', [50, 200]);
+                if ($capacity === 'large') return $query->where('capacity', '>', 200);
+                return $query;
+            })
+            ->when($request->price_range, function ($query, $price_range) {
+                if ($price_range === 'low') return $query->where('price_per_hour', '<', 10000);
+                if ($price_range === 'medium') return $query->whereBetween('price_per_hour', [10000, 50000]);
+                if ($price_range === 'high') return $query->where('price_per_hour', '>', 50000);
+                return $query;
             })
             ->when($request->search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%");
             })
             ->orderBy('name')
-            ->paginate(12);
+            ->paginate(12)->withQueryString();
 
-        return view('dashboard.halls', compact('halls'));
+        return view('dashboard.halls', compact('halls', 'locations'));
     }
 
     /**
@@ -113,8 +126,27 @@ class DashboardController extends Controller
      */
     public function events(Request $request)
     {
+        $locations = \App\Models\Location::orderBy('name')->get();
+
         $events = Event::active()
             ->upcoming()
+            // LOCATION FILTER
+            ->when($request->location, function ($query, $location) {
+                return $query->where('location', $location);
+            })
+            // PRICE FILTER: Free vs Paid distinction
+            ->when($request->price_range, function ($query, $price_range) {
+                if ($price_range === 'free') return $query->where('ticket_price', 0);
+                if ($price_range === 'paid') return $query->where('ticket_price', '>', 0);
+                return $query;
+            })
+            // DATE FILTER: Time-based buckets relative to Carbon::now()
+            ->when($request->date, function ($query, $date) {
+                if ($date === 'today') return $query->whereDate('event_date', \Carbon\Carbon::today());
+                if ($date === 'this_week') return $query->whereBetween('event_date', [\Carbon\Carbon::now()->startOfWeek(), \Carbon\Carbon::now()->endOfWeek()]);
+                if ($date === 'this_month') return $query->whereMonth('event_date', \Carbon\Carbon::now()->month)->whereYear('event_date', \Carbon\Carbon::now()->year);
+                return $query;
+            })
             ->when($request->available_only, function ($query) {
                 return $query->available();
             })
@@ -123,9 +155,9 @@ class DashboardController extends Controller
                     ->orWhere('location', 'like', "%{$search}%");
             })
             ->orderBy('event_date')
-            ->paginate(12);
+            ->paginate(12)->withQueryString();
 
-        return view('dashboard.events', compact('events'));
+        return view('dashboard.events', compact('events', 'locations'));
     }
 
     /**

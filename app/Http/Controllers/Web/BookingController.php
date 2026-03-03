@@ -94,7 +94,8 @@ class BookingController extends Controller
         }
 
         try {
-            // Create booking
+            // STEP 1: Create the initial pending booking record via BookingService
+            // This handles the core logic of reserving the slot before payment
             $booking = $this->bookingService->createBooking(
                 Auth::user(),
                 Booking::TYPE_HALL,
@@ -107,9 +108,12 @@ class BookingController extends Controller
                 ]
             );
 
-            // Initiate payment
+            // STEP 2: Initiate the Mobile Money payment via PaymentService
+            // This sends the STK push to the user's registered phone number
             $this->paymentService->initiatePayment($booking);
 
+            // STEP 3: Redirect the user to the confirmation page
+            // The user will see instructions to check their phone and the page will poll for status updates
             return redirect()->route('bookings.confirmation', $booking->id)
                 ->with('success', 'Booking created! Please check your phone for payment prompt.');
 
@@ -141,7 +145,8 @@ class BookingController extends Controller
         }
 
         try {
-            // Get event and check availability
+            // STEP 1: Get the specified event and verify ticket availability
+            // This prevents overbooking if multiple users try to book simultaneously
             $event = Event::findOrFail($request->event_id);
             
             if (!$event->hasAvailableSlots($request->quantity)) {
@@ -150,7 +155,8 @@ class BookingController extends Controller
                     ->withInput();
             }
 
-            // Create booking
+            // STEP 2: Create the initial pending booking record
+            // Generates a unique transaction reference and holds the tickets
             $booking = $this->bookingService->createBooking(
                 Auth::user(),
                 Booking::TYPE_EVENT,
@@ -162,9 +168,11 @@ class BookingController extends Controller
                 ]
             );
 
-            // Initiate payment
+            // STEP 3: Initiate the MTN/Orange Mobile Money STK Push
+            // Sends the payment request to the user's phone
             $this->paymentService->initiatePayment($booking);
 
+            // STEP 4: Redirect to the waiting/confirmation screen
             return redirect()->route('bookings.confirmation', $booking->id)
                 ->with('success', 'Booking created! Please check your phone for payment prompt.');
 

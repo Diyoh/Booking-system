@@ -32,8 +32,14 @@
                         
                         <div>
                             <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
-                            <input type="text" name="location" id="location" value="{{ old('location') }}" required 
-                                class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <select name="location" id="location" required class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                <option value="">Select a Location</option>
+                                @foreach($locations as $loc)
+                                    <option value="{{ $loc->name }}" {{ old('location') == $loc->name ? 'selected' : '' }}>
+                                        {{ $loc->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         
                         <div>
@@ -43,15 +49,33 @@
                         </div>
                         
                         <div>
-                            <label for="price_per_hour" class="block text-sm font-medium text-gray-700">Price per Hour ($)</label>
+                            <label for="price_per_hour" class="block text-sm font-medium text-gray-700">Price per Hour (FCFA)</label>
                             <input type="number" name="price_per_hour" id="price_per_hour" value="{{ old('price_per_hour') }}" required min="0" step="0.01"
                                 class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                         </div>
                         
-                        <div>
-                            <label for="image_url" class="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-                            <input type="text" name="image_url" id="image_url" value="{{ old('image_url') }}"
-                                class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div class="col-span-2 bg-gray-50 p-4 rounded border border-gray-200">
+                            <h3 class="font-medium text-lg mb-4">Images</h3>
+                            <div class="mb-4">
+                                <label for="front_image" class="block text-sm font-medium text-gray-700">Front Image (Main Cover)</label>
+                                <input type="file" name="front_image" id="front_image" accept="image/*" class="mt-1 flex w-full border-gray-300 rounded-md shadow-sm text-sm p-2 bg-white">
+                                <p class="text-xs text-gray-500 mt-1">Recommended size: 800x600px, max 2MB. Optional.</p>
+                                @error('front_image')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="other_images" class="block text-sm font-medium text-gray-700">Other Images (Gallery)</label>
+                                <input type="file" name="other_images[]" id="other_images" multiple accept="image/*" class="mt-1 flex w-full border-gray-300 rounded-md shadow-sm text-sm p-2 bg-white">
+                                <p class="text-xs text-gray-500 mt-1">You can select multiple images. Max 2MB per image. Optional.</p>
+                                @error('other_images')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                                @error('other_images.*')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 

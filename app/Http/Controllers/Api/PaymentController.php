@@ -71,6 +71,8 @@ class PaymentController extends Controller
                     'message' => 'Payment processed successfully',
                 ], 200);
             } else {
+                // Africa's Talking requires a 200 HTTP status code so it knows we received the webhook.
+                // If we return a 400/500, AT will continuously retry the callback.
                 return response()->json([
                     'status' => 'failed',
                     'message' => 'Payment processing failed',

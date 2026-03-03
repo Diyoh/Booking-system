@@ -52,15 +52,17 @@ class BookingService
 
         // Check for overlapping bookings
         // A booking overlaps if:
-        // 1. It starts before requested end AND ends after requested start
-        // 2. Status is confirmed or pending (not cancelled/expired)
+        // 1. Existing booking starts before requested end time AND ends after requested start time
+        // 2. Status is confirmed or pending (not cancelled or expired hold)
+        // Note: Pending bookings hold the slot for 5 minutes during payment
         $overlappingBookings = Booking::where('resource_type', Booking::TYPE_HALL)
             ->where('resource_id', $hallId)
             ->where('booking_date', $date)
             ->whereIn('status', [Booking::STATUS_PENDING, Booking::STATUS_CONFIRMED])
             ->where(function ($query) use ($startTime, $endTime) {
+                // Group the overlap logic
                 $query->where(function ($q) use ($startTime, $endTime) {
-                    // Existing booking starts before our end time
+                    // Check if existing booking overlaps with requested time slot
                     $q->where('start_time', '<', $endTime)
                       // AND existing booking ends after our start time
                       ->where('end_time', '>', $startTime);
@@ -109,12 +111,14 @@ class BookingService
     {
         return DB::transaction(function () use ($user, $resourceType, $resourceId, $bookingData) {
             
-            // Validate resource type
+            // Validate resource type is either 'hall' or 'event'
             if (!in_array($resourceType, [Booking::TYPE_HALL, Booking::TYPE_EVENT])) {
                 throw new \InvalidArgumentException("Invalid resource type: {$resourceType}");
             }
 
-            // Load the resource
+            // Load the resource with a pessimistic write lock (FOR UPDATE)
+            // This guarantees no other concurrent request can read/modify this resource
+            // until the current transaction commits or rolls back
             if ($resourceType === Booking::TYPE_HALL) {
                 $resource = Hall::lockForUpdate()->find($resourceId);
             } else {
@@ -125,8 +129,9 @@ class BookingService
                 throw new \Exception("Resource not found");
             }
 
-            // Validate availability
+            // Validate availability within the lock
             if ($resourceType === Booking::TYPE_HALL) {
+                // Re-check overlap with the database locked
                 if (!$this->isHallAvailable(
                     $resourceId,
                     $bookingData['booking_date'],
@@ -136,14 +141,14 @@ class BookingService
                     throw new \Exception("Hall is not available for the selected time slot");
                 }
 
-                // Calculate total amount for hall (hourly rate)
+                // Calculate total amount for hall based on hourly rate
                 $start = Carbon::parse($bookingData['start_time']);
                 $end = Carbon::parse($bookingData['end_time']);
                 $hours = $start->diffInHours($end);
                 $totalAmount = $hours * $resource->price_per_hour;
                 
             } else {
-                // Event booking
+                // Event booking - check if enough tickets are remaining
                 $quantity = $bookingData['quantity'] ?? 1;
                 
                 if (!$this->isEventAvailable($resourceId, $quantity)) {

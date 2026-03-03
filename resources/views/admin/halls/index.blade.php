@@ -18,6 +18,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
@@ -28,6 +29,15 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($halls as $hall)
                                 <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($hall->image_url)
+                                            <img src="{{ Str::startsWith($hall->image_url, ['http://', 'https://', '/']) ? $hall->image_url : asset('storage/' . $hall->image_url) }}" alt="Image" class="h-10 w-10 rounded-full object-cover">
+                                        @else
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $hall->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $hall->location }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $hall->capacity }}</td>

@@ -63,7 +63,8 @@ class UssdSession extends Model
     {
         parent::boot();
 
-        // Set expiry time on creation (180 seconds - MNO timeout)
+        // Set expiry time on creation (180 seconds is the standard Africa's Talking MNO timeout limit)
+        // If the user does not respond within this window, the MNO drops the session.
         static::creating(function ($session) {
             if (empty($session->expires_at)) {
                 $session->expires_at = Carbon::now()->addSeconds(

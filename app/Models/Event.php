@@ -50,6 +50,7 @@ class Event extends Model
         'available_slots',
         'booked_slots',
         'image_url',
+        'other_images',
         'is_active',
     ];
 
@@ -66,6 +67,7 @@ class Event extends Model
             'ticket_price' => 'decimal:2',
             'available_slots' => 'integer',
             'booked_slots' => 'integer',
+            'other_images' => 'array',
         ];
     }
 

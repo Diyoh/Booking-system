@@ -43,6 +43,7 @@ class Hall extends Model
         'price_per_hour',
         'amenities',
         'image_url',
+        'other_images',
         'is_active',
     ];
 
@@ -55,6 +56,7 @@ class Hall extends Model
     {
         return [
             'amenities' => 'array',  // Automatically decode JSON to array
+            'other_images' => 'array',
             'is_active' => 'boolean',
             'price_per_hour' => 'decimal:2',
         ];

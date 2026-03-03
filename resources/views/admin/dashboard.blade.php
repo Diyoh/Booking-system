@@ -8,6 +8,7 @@
         </h2>
 
         <!-- Stats Grid -->
+        {{-- High-level system statistics (Users, Revenue, Bookings) --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <div class="text-gray-500 text-sm uppercase font-bold">Total Users</div>
@@ -42,6 +43,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
+                                {{-- Display the 10 most recent bookings with dynamic status badges --}}
                                 @forelse($recentBookings as $booking)
                                     <tr>
                                         <td class="px-4 py-2 text-sm">{{ $booking->user->name }}</td>
@@ -79,8 +81,17 @@
                         <a href="{{ route('admin.events.create') }}" class="block w-full text-center bg-green-50 text-green-700 font-semibold py-3 px-4 rounded hover:bg-green-100 transition border border-green-200">
                             + Create New Event
                         </a>
+                        <a href="{{ route('admin.halls') }}" class="block w-full text-center bg-indigo-50 text-indigo-700 font-semibold py-3 px-4 rounded hover:bg-indigo-100 transition border border-indigo-200">
+                            Manage Halls
+                        </a>
+                        <a href="{{ route('admin.events') }}" class="block w-full text-center bg-teal-50 text-teal-700 font-semibold py-3 px-4 rounded hover:bg-teal-100 transition border border-teal-200">
+                            Manage Events
+                        </a>
                         <a href="{{ route('admin.users') }}" class="block w-full text-center bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded hover:bg-gray-100 transition border border-gray-200">
                             Manage Users
+                        </a>
+                        <a href="{{ route('admin.locations') }}" class="block w-full text-center bg-purple-50 text-purple-700 font-semibold py-3 px-4 rounded hover:bg-purple-100 transition border border-purple-200">
+                            Manage Locations
                         </a>
                     </div>
                 </div>

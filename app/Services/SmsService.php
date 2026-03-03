@@ -71,6 +71,7 @@ class SmsService
             $booking->formatted_amount
         );
 
+        // Dispatches the SMS through Africa's Talking via the wrapper
         return $this->send($booking->user->phone_number, $message);
     }
 

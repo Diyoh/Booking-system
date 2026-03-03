@@ -6,8 +6,21 @@
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
                 @if($hall->image_url)
-                <div class="w-full h-80 mb-8 rounded-lg overflow-hidden">
-                    <img src="{{ $hall->image_url }}" alt="{{ $hall->name }}" class="w-full h-full object-cover">
+                <div class="w-full h-80 mb-8 rounded-lg overflow-hidden relative">
+                    <img src="{{ Str::startsWith($hall->image_url, ['http://', 'https://', '/']) ? $hall->image_url : asset('storage/' . $hall->image_url) }}" alt="{{ $hall->name }}" class="w-full h-full object-cover">
+                </div>
+                @endif
+                
+                @if($hall->other_images && count($hall->other_images) > 0)
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Gallery</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @foreach($hall->other_images as $img)
+                            <div class="h-32 rounded-lg overflow-hidden shadow-sm">
+                                <img src="{{ asset('storage/' . $img) }}" alt="Gallery image for {{ $hall->name }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
                 @endif
                 <div class="md:flex md:justify-between">

@@ -89,6 +89,7 @@ class User extends Authenticatable
      */
     public function hasUssdPin(): bool
     {
+        // A non-null USSD pin means the user has completed USSD registration (option 4)
         return !is_null($this->ussd_pin);
     }
 
@@ -100,6 +101,8 @@ class User extends Authenticatable
      */
     public function verifyUssdPin(string $pin): bool
     {
+        // Simple string comparison for the 4-digit PIN.
+        // In a production system this should ideally use Hash::check() for security.
         return $this->ussd_pin === $pin;
     }
 
