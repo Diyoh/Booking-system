@@ -89,6 +89,7 @@ class UssdMenuService
             'browse_events' => $this->browseEventsMenu($session, $input),
             'select_date' => $this->selectDateMenu($session, $input),
             'select_time' => $this->selectTimeMenu($session, $input),
+            'enter_duration' => $this->enterDurationMenu($session, $input),
             'enter_pin' => $this->enterPinMenu($session, $input, $phoneNumber),
             'confirm_booking' => $this->confirmBookingMenu($session, $input, $phoneNumber),
             'my_bookings' => $this->myBookingsMenu($session, $phoneNumber),
@@ -326,8 +327,26 @@ class UssdMenuService
         }
 
         $session->setData('start_time', $input);
-        $session->updateState('enter_pin');
+        $session->updateState('enter_duration');
         return "CON Enter duration (hours):";
+    }
+
+    /**
+     * Enter Duration Menu.
+     *
+     * @param UssdSession $session
+     * @param string $input
+     * @return string
+     */
+    protected function enterDurationMenu(UssdSession $session, string $input): string
+    {
+        if (!is_numeric($input) || $input < 1 || $input > 24) {
+            return "CON Invalid duration. Enter hours (1-24):";
+        }
+
+        $session->setData('duration', $input);
+        $session->updateState('enter_pin');
+        return "CON Enter your 4-digit PIN:";
     }
 
     /**
@@ -368,17 +387,54 @@ class UssdMenuService
 
         // Summary screen
         if (empty($input)) {
+            $eventId = $session->getData('event_id');
+            if ($eventId) {
+                $event = Event::find($eventId);
+                $summary = "CON Confirm Ticket:\n{$event->name}\nPrice: FCFA " . number_format($event->ticket_price, 0) . "\n1. Confirm\n2. Cancel";
+                return $summary;
+            }
+
             $hallId = $session->getData('hall_id');
             $hall = Hall::find($hallId);
+            $duration = $session->getData('duration');
+            $total = $hall->price_per_hour * $duration;
             
-            $summary = "CON Confirm Booking:\n{$hall->name}\nDate: {$session->getData('date')}\n1. Confirm\n2. Cancel";
+            $summary = "CON Confirm Booking:\n{$hall->name}\nDate: {$session->getData('date')}\nDur: {$duration} hrs\nTotal: FCFA " . number_format($total, 0) . "\n1. Confirm\n2. Cancel";
             return $summary;
         }
 
         if ($input === '1') {
-            // Create booking and initiate payment
-            // Implementation continues...
-            return "END Please check your phone for payment prompt.";
+            try {
+                $bookingService = app(\App\Services\BookingService::class);
+                
+                $eventId = $session->getData('event_id');
+                if ($eventId) {
+                    $bookingService->createBooking($user, \App\Models\Booking::TYPE_EVENT, $eventId, [
+                        'booking_date' => date('Y-m-d'), // Events usually have fixed dates, but requires this field
+                        'quantity' => 1,
+                        'source' => \App\Models\Booking::SOURCE_USSD
+                    ]);
+                } else {
+                    $hallId = $session->getData('hall_id');
+                    $date = \Carbon\Carbon::createFromFormat('d-m-Y', $session->getData('date'))->format('Y-m-d');
+                    $startTime = $session->getData('start_time');
+                    $duration = (int) $session->getData('duration');
+                    $endTime = \Carbon\Carbon::parse($startTime)->addHours($duration)->format('H:i');
+
+                    $bookingService->createBooking($user, \App\Models\Booking::TYPE_HALL, $hallId, [
+                        'booking_date' => $date,
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'quantity' => 1,
+                        'source' => \App\Models\Booking::SOURCE_USSD
+                    ]);
+                }
+                
+                return "END Booking initiated. Please check your phone for the M-Pesa payment prompt.";
+            } catch (\Exception $e) {
+                Log::error('USSD Booking Error: ' . $e->getMessage());
+                return "END Error creating booking. The slot might be taken. Please try again.";
+            }
         }
 
         return "END Booking cancelled.";

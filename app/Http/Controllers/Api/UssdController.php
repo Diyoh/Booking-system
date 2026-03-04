@@ -58,7 +58,8 @@ class UssdController extends Controller
         // Extract USSD parameters from Africa's Talking
         $sessionId = $request->input('sessionId');
         $phoneNumber = $request->input('phoneNumber');
-        $text = $request->input('text', '');
+        // AT sometimes sends text as null on the first request. We cast to string to prevent TypeError
+        $text = (string) $request->input('text');
 
         // Log the incoming request
         Log::info('USSD Request Received', [
