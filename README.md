@@ -477,7 +477,7 @@ PHPUnit and Mockery are configured, and Faker is available for factories and see
 
 Released under the MIT License. See [LICENSE](LICENSE).
 
-Built by **Diyoh Shiloh** as a final year project.
+Built by **Diyoh Shiloh** .
 
 <div align="center">
 
